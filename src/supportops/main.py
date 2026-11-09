@@ -1,9 +1,9 @@
-from src.supportops.classifier import analyze_message
+from supportops.classifier import analyze_message
 
 
 def main() -> None:
     """Execute the core customer support triage processing workspace."""
-    
+
     test_messages = [
         "My order is late, I want to speak to your manager",
         "Where is my order? It has been delayed.",
