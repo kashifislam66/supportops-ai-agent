@@ -1,5 +1,7 @@
+import logging
 import re
 
+logger = logging.getLogger(__name__)
 # Ordered by priority: the first matching category wins.
 CATEGORY_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     (
@@ -45,6 +47,7 @@ def classify_message(message: str) -> str:
     """
     for category, pattern in CATEGORY_PATTERNS:
         if pattern.search(message):
+            logger.debug("Matched category=%s", category)
             return category
     return DEFAULT_CATEGORY
 
@@ -56,8 +59,11 @@ def is_urgent(message: str) -> bool:
 
 def analyze_message(message: str) -> dict[str, str | bool]:
     """Return the category and urgency of a customer message."""
+    category = classify_message(message)
+    urgent = is_urgent(message)
+    logger.info("Analyzed message: category=%s urgent=%s", category, urgent)
     return {
         "message": message,
-        "category": classify_message(message),
-        "urgent": is_urgent(message),
+        "category": category,
+        "urgent": urgent,
     }
