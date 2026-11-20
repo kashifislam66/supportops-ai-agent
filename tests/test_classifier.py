@@ -1,6 +1,7 @@
 import pytest
 
 from supportops.classifier import analyze_message, classify_message, is_urgent
+from supportops.exceptions import InvalidMessageError
 
 
 @pytest.mark.parametrize(
@@ -38,6 +39,27 @@ def test_classify_message(message: str, expected: str) -> None:
 
 
 @pytest.mark.parametrize(
+    "bad_input",
+    [
+        "",       # Empty string
+        "   ",    # Whitespace only
+        None,     # None value
+        123,      # Non-string value
+    ],
+)
+def test_invalid_messages_raise_error(bad_input: object) -> None:
+    with pytest.raises(InvalidMessageError, match="empty or invalid"):
+        classify_message(bad_input)  # type: ignore[arg-type]
+
+    with pytest.raises(InvalidMessageError, match="empty or invalid"):
+        is_urgent(bad_input)  # type: ignore[arg-type]
+
+    with pytest.raises(InvalidMessageError, match="empty or invalid"):
+        analyze_message(bad_input)  # type: ignore[arg-type]
+
+
+
+@pytest.mark.parametrize(
     ("message", "expected"),
     [
         ("URGENT HELP", True),
@@ -45,7 +67,6 @@ def test_classify_message(message: str, expected: str) -> None:
         ("I need it immediately", True),
         ("Thanks for your help", False),
         ("This is urgently needed", True),
-        ("", False),
     ],
 )
 def test_is_urgent(message: str, expected: bool) -> None:

@@ -1,6 +1,8 @@
 import logging
 import re
 
+from supportops.exceptions import InvalidMessageError
+
 logger = logging.getLogger(__name__)
 # Ordered by priority: the first matching category wins.
 CATEGORY_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
@@ -39,12 +41,20 @@ DEFAULT_CATEGORY = "general"
 URGENT_PATTERN = re.compile(r"\burgent\w*|\basap\b|\bimmediately\b", re.IGNORECASE)
 
 
+def _validate_message(message: object) -> None:
+    """Raise InvalidMessageError if the message is empty or invalid."""
+    if not isinstance(message, str) or not message.strip():
+        raise InvalidMessageError("Customer message is empty or invalid.")
+
+
 def classify_message(message: str) -> str:
     """Return the category of a customer message.
 
     Patterns are checked in priority order (escalate first). Each pattern
     matches the start of a word, plus a few allowed endings.
     """
+    _validate_message(message)
+
     for category, pattern in CATEGORY_PATTERNS:
         if pattern.search(message):
             logger.debug("Matched category=%s", category)
@@ -54,6 +64,8 @@ def classify_message(message: str) -> str:
 
 def is_urgent(message: str) -> bool:
     """Return True if the message is all caps or contains an urgent keyword."""
+    _validate_message(message)
+
     return message.isupper() or bool(URGENT_PATTERN.search(message))
 
 
