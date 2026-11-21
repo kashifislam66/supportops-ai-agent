@@ -2,33 +2,34 @@ import logging
 import re
 
 from supportops.exceptions import InvalidMessageError
+from supportops.models import Category, MessageAnalysis
 
 logger = logging.getLogger(__name__)
 # Ordered by priority: the first matching category wins.
-CATEGORY_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+CATEGORY_PATTERNS: tuple[tuple[Category, re.Pattern[str]], ...] = (
     (
-        "escalate",
+        Category.ESCALATE,
         re.compile(
             r"\bmanager\w*|\bsu(?:e|es|ed|ing)\b|\blawyer\w*|\bcomplain\w*",
             re.IGNORECASE,
         ),
     ),
     (
-        "refund",
+        Category.REFUND,
         re.compile(
             r"\brefund\w*|\bmoney back\b|\bcharge(?:s|d)?\b",
             re.IGNORECASE,
         ),
     ),
     (
-        "technical",
+        Category.TECHNICAL,
         re.compile(
             r"\bpassword\w*|\blogin\w*|\berror\w*|\bbug\w*",
             re.IGNORECASE,
         ),
     ),
     (
-        "order_status",
+        Category.ORDER_STATUS,
         re.compile(
             r"\border(?:s|ed|ing)?\b|\btrack(?:s|ed|ing)?\b",
             re.IGNORECASE,
@@ -36,7 +37,7 @@ CATEGORY_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ),
 )
 
-DEFAULT_CATEGORY = "general"
+DEFAULT_CATEGORY = Category.GENERAL
 
 URGENT_PATTERN = re.compile(r"\burgent\w*|\basap\b|\bimmediately\b", re.IGNORECASE)
 
@@ -47,7 +48,7 @@ def _validate_message(message: object) -> None:
         raise InvalidMessageError("Customer message is empty or invalid.")
 
 
-def classify_message(message: str) -> str:
+def classify_message(message: str) -> Category:
     """Return the category of a customer message.
 
     Patterns are checked in priority order (escalate first). Each pattern
@@ -74,8 +75,6 @@ def analyze_message(message: str) -> dict[str, str | bool]:
     category = classify_message(message)
     urgent = is_urgent(message)
     logger.info("Analyzed message: category=%s urgent=%s", category, urgent)
-    return {
-        "message": message,
-        "category": category,
-        "urgent": urgent,
-    }
+
+    return MessageAnalysis(message=message, category=category, urgent=urgent)
+    

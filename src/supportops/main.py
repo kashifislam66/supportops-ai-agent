@@ -32,9 +32,9 @@ def main() -> None:
         except InvalidMessageError as e:
             logger.warning("Skipping invalid message: %s", e)
         else:
-            print(f"Message:  '{analysis['message']}'")
-            print(f"Category: {analysis['category']}")
-            print(f"Urgent:   {analysis['urgent']}")
+            print(f"Message:  '{analysis.message}'")
+            print(f"Category: {analysis.category}")
+            print(f"Urgent:   {analysis.urgent}")
         print("-" * 40)
 
 if __name__ == "__main__":
