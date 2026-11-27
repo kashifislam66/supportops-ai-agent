@@ -1,6 +1,16 @@
+import re
+
 import pytest
 
-from supportops.classifier import analyze_message, classify_message, is_urgent
+from supportops.classifier import (
+    Category,
+    MessageAnalysis,
+    Rule,
+    RuleBasedClassifier,
+    analyze_message,
+    classify_message,
+    is_urgent,
+)
 from supportops.exceptions import InvalidMessageError
 
 
@@ -73,12 +83,27 @@ def test_is_urgent(message: str, expected: bool) -> None:
     assert is_urgent(message) == expected
 
 
-def test_analyze_message() -> None:
+def test_analyze_message() -> MessageAnalysis:
     msg = "URGENT: Where is my order?"
     result = analyze_message(msg)
+    print("Actual Output:", result)
+    assert result == MessageAnalysis(
+        message=msg,
+        category=Category.ORDER_STATUS,
+        urgent=True,
+    )
 
-    assert result == {
-        "message": msg,
-        "category": "order_status",
-        "urgent": True,
-    }
+
+def test_custom_single_rule_classifier():
+    rule = [Rule(Category.REFUND, re.compile(r"\bmoney\b", re.IGNORECASE))]
+   
+    clf = RuleBasedClassifier(rule)
+
+    print("dsff", clf.classify("I want my money"))
+    rule.clear()
+    print("ppp", clf.classify("I want my money"))
+
+    # assert clf.classify("I want my money") == Category.REFUND
+
+    # assert clf.classify("hello") == Category.GENERAL
+

@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -15,3 +16,8 @@ class MessageAnalysis:
     message: str
     category: Category
     urgent: bool
+
+@dataclass(frozen=True, slots=True)
+class Rule:
+    category: Category
+    pattern: re.Pattern[str]
